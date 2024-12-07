@@ -1,0 +1,2 @@
+k3s-airgap-images-1.31.2+k3s1-arm64.tar.zst filter=lfs diff=lfs merge=lfs -text
+k3s-1.31.2+k3s1-arm64 filter=lfs diff=lfs merge=lfs -text

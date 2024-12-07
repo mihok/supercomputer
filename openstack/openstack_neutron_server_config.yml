@@ -1,0 +1,8 @@
+neutron_plugin_types:
+  - ml2.genericswitch
+  - ml2.baremetal
+
+# keep the ml2 drivers in this order
+# see https://storyboard.openstack.org/#!/story/2008686
+neutron_ml2_mechanism_drivers: "genericswitch,baremetal"
+

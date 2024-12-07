@@ -1,0 +1,23 @@
+services:
+  database:
+    image: mariadb:lts
+    restart: always
+    ports:
+      - 0.0.0.0:3306:3306
+    environment:
+      MARIADB_ROOT_PASSWORD: asd345#$%
+  
+  registry:
+    image: registry:2
+    restart: always
+    ports:
+      - 0.0.0.0:5000:5000
+
+  dns:
+    image: ubuntu/bind9:9.18-22.04_beta
+    restart: always
+    ports:
+      - 0.0.0.0:53:53
+      - 0.0.0.0:53:53/udp
+    environment:
+      - TZ=UTC
