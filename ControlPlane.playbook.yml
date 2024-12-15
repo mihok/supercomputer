@@ -1,0 +1,50 @@
+- name: Openstack Control Plane
+  hosts: control
+  tasks:
+
+    - name: "Start systemd DNS if it wasnt running before"
+      ansible.builtin.shell: sudo systemctl stop systemd-resolved
+
+    - name: "Set systemd DNS configuration"
+      ansible.builtin.shell: echo "nameserver 8.8.4.4" > /etc/resolv.conf
+      become: true
+
+    - name: "Ensure Docker is installed"
+      script: apt/docker.sh
+
+    - name: "Pull bind9 DNS"
+      ansible.builtin.shell: docker pull ubuntu/bind9:9.18-22.04_beta
+
+    - name: "Disable systemd DNS"
+      ansible.builtin.shell: sudo systemctl disable systemd-resolved
+    
+    - name: "Stop systemd DNS"
+      ansible.builtin.shell: sudo systemctl stop systemd-resolved
+
+    - name: "Remove systemd DNS configuration"
+      ansible.builtin.shell: sudo rm -f /etc/resolv.conf
+
+    - name: "Ensure supercomputer directory exists"
+      ansible.builtin.shell: sudo mkdir -p /super && sudo chmod 777 /super
+      
+    - name: "Copy prerequisites"
+      synchronize:
+        src: ./
+        dest: /super/
+      become: true
+
+
+    - name: "Shutdown prerequisite services"
+      community.docker.docker_compose_v2:
+        project_src: /super
+        state: absent
+
+    - name: "Run DNS services"
+      community.docker.docker_compose_v2:
+        project_src: /super
+        services:
+          - dns
+
+    - name: "Run prerequisite services"
+      community.docker.docker_compose_v2:
+        project_src: /super

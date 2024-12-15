@@ -1,0 +1,4 @@
+- name: Openstack Compute Plane
+  hosts: supercomputer
+  tasks:
+    - name: 

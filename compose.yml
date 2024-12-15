@@ -6,7 +6,9 @@ services:
       - 0.0.0.0:3306:3306
     environment:
       MARIADB_ROOT_PASSWORD: asd345#$%
-  
+    volumes:
+      - ./db/mariadb.cnf:/etc/mysql/mariadb.cnf:ro
+
   registry:
     image: registry:2
     restart: always
@@ -21,3 +23,19 @@ services:
       - 0.0.0.0:53:53/udp
     environment:
       - TZ=UTC
+    volumes:
+      - ./dns/named.conf.options:/etc/bind/named.conf.options:ro
+      - ./dns/named.conf.local:/etc/bind/named.conf.local:ro
+      - ./dns/zones/db.dns.computer:/etc/bind/db.dns.computer:ro
+      - ./dns/zones/db.registry.computer:/etc/bind/db.registry.computer:ro
+      - ./dns/zones/db.database.computer:/etc/bind/db.database.computer:ro
+      - ./dns/zones/db.database.computer:/etc/bind/db.control.computer:ro
+
+  keystone:
+    depends_on: 
+      - dns
+    build: ./openstack/keystone
+    ports:
+      - 0.0.0.0:5555:5555
+    volumes:
+      - ./openstack/keystone/keystone.conf:/etc/keystone/keystone.conf:ro

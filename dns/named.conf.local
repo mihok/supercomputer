@@ -1,0 +1,27 @@
+zone "dns.computer" {
+	type master;
+	file "/etc/bind/db.dns.computer";
+	allow-transfer { 192.168.4.134; };
+	also-notify { 192.168.4.134; };
+};
+
+zone "registry.computer" {
+	type master;
+	file "/etc/bind/db.registry.computer";
+	allow-transfer { 192.168.4.134; };
+	also-notify { 192.168.4.134; };
+};
+
+zone "database.computer" {
+	type master;
+	file "/etc/bind/db.database.computer";
+	allow-transfer { 192.168.4.134; };
+	also-notify { 192.168.4.134; };
+};
+
+zone "control.computer" {
+	type master;
+	file "/etc/bind/db.control.computer";
+	allow-transfer { 192.168.4.134; };
+	also-notify { 192.168.4.134; };
+};
