@@ -3,17 +3,13 @@
   tasks:
 
     - name: "Start systemd DNS if it wasnt running before"
-      ansible.builtin.shell: sudo systemctl stop systemd-resolved
-
-    - name: "Set systemd DNS configuration"
-      ansible.builtin.shell: echo "nameserver 8.8.4.4" > /etc/resolv.conf
-      become: true
+      ansible.builtin.shell: sudo systemctl start systemd-resolved
 
     - name: "Ensure Docker is installed"
       script: apt/docker.sh
 
     - name: "Pull bind9 DNS"
-      ansible.builtin.shell: docker pull ubuntu/bind9:9.18-22.04_beta
+      ansible.builtin.shell: sudo docker pull ubuntu/bind9:9.18-22.04_beta
 
     - name: "Disable systemd DNS"
       ansible.builtin.shell: sudo systemctl disable systemd-resolved
@@ -33,18 +29,41 @@
         dest: /super/
       become: true
 
-
     - name: "Shutdown prerequisite services"
       community.docker.docker_compose_v2:
         project_src: /super
+        files: 
+          - base.compose.yml
         state: absent
+      become: true
 
     - name: "Run DNS services"
       community.docker.docker_compose_v2:
         project_src: /super
+        files: 
+          - base.compose.yml
         services:
           - dns
+      become: true
 
     - name: "Run prerequisite services"
       community.docker.docker_compose_v2:
         project_src: /super
+        files: 
+          - base.compose.yml
+      become: true
+
+    - name: "Wait for SQL to startup"
+      ansible.builtin.pause:
+        seconds: 10
+
+    - name: "Install SQL initialization scripts"
+      ansible.builtin.shell: sudo apt install python3-pymysql
+
+    - name: "Install keystone"
+      ansible.builtin.include_tasks:
+        file: Control.keystone.playbook.yml
+
+    - name: "Install glance"
+      ansible.builtin.include_tasks:
+        file: Control.glance.playbook.yml

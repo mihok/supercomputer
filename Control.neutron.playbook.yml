@@ -1,0 +1,29 @@
+- name: "Run SQL initialization for 'neutron'"
+  community.mysql.mysql_query:
+    login_db: mysql
+    login_host: database.computer
+    login_user: root
+    login_password: "asd345#$%"
+    query:
+      - CREATE DATABASE IF NOT EXISTS neutron;
+      - GRANT ALL PRIVILEGES ON neutron.* TO 'neutron'@'localhost' IDENTIFIED BY 'GLANCE_DBPASS';
+      - GRANT ALL PRIVILEGES ON neutron.* TO 'neutron'@'%' IDENTIFIED BY 'GLANCE_DBPASS';
+
+- name: "Run SQL migrations for 'neutron'"
+  community.docker.docker_compose_v2_run:
+    service: neutron
+    project_src: /super
+    files:
+      - openstack.compose.yml
+    command: su -s /bin/sh -c "neutron-manage db_sync" neutron
+
+
+- name: "Run 'neutron' service"
+  community.docker.docker_compose_v2:
+    recreate: always
+    services: 
+      - neutron
+    project_src: /super
+    files:
+      - openstack.compose.yml
+  become: true

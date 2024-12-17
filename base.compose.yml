@@ -1,23 +1,39 @@
 services:
   database:
     image: mariadb:lts
+    command: --default-authentication-plugin=mysql_native_password
     restart: always
+    network_mode: host
     ports:
       - 0.0.0.0:3306:3306
     environment:
       MARIADB_ROOT_PASSWORD: asd345#$%
     volumes:
       - ./db/mariadb.cnf:/etc/mysql/mariadb.cnf:ro
+      - /var/lib/mysql:/var/lib/mysql:Z
+
+  queue:
+    image: rabbitmq:4-management-alpine
+    restart: always
+    network_mode: host
+    ports:
+      - 0.0.0.0:5672:5672
+      - 127.0.0.1:8080:8080
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: ADMIN_PASS
 
   registry:
     image: registry:2
     restart: always
+    network_mode: host
     ports:
       - 0.0.0.0:5000:5000
 
   dns:
     image: ubuntu/bind9:9.18-22.04_beta
     restart: always
+    network_mode: host
     ports:
       - 0.0.0.0:53:53
       - 0.0.0.0:53:53/udp
@@ -31,11 +47,3 @@ services:
       - ./dns/zones/db.database.computer:/etc/bind/db.database.computer:ro
       - ./dns/zones/db.database.computer:/etc/bind/db.control.computer:ro
 
-  keystone:
-    depends_on: 
-      - dns
-    build: ./openstack/keystone
-    ports:
-      - 0.0.0.0:5555:5555
-    volumes:
-      - ./openstack/keystone/keystone.conf:/etc/keystone/keystone.conf:ro

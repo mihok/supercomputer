@@ -1,0 +1,37 @@
+- name: "Run SQL initialization for 'keystone'"
+  community.mysql.mysql_query:
+    login_db: mysql
+    login_host: database.computer
+    login_user: root
+    login_password: "asd345#$%"
+    query:
+      - CREATE DATABASE IF NOT EXISTS keystone;
+      - GRANT ALL PRIVILEGES ON keystone.* TO 'keystone'@'localhost' IDENTIFIED BY 'KEYSTONE_DBPASS';
+      - GRANT ALL PRIVILEGES ON keystone.* TO 'keystone'@'%' IDENTIFIED BY 'KEYSTONE_DBPASS';
+
+- name: "Run 'keystone' service"
+  community.docker.docker_compose_v2:
+    recreate: always
+    services: 
+      - keystone
+    project_src: /super
+    files:
+      - openstack.compose.yml
+  become: true
+
+- name: "Run SQL migrations for 'keystone'"
+  community.docker.docker_compose_v2_run:
+    service: keystone
+    project_src: /super
+    files:
+      - openstack.compose.yml
+    command: su -s /bin/sh -c "keystone-manage db_sync" keystone
+
+- name: "Bootstrap 'keystone'"
+  community.docker.docker_compose_v2_run:
+    service: keystone
+    project_src: /super
+    files:
+      - openstack.compose.yml
+    command: su -s /bin/sh -c "keystone-manage bootstrap --bootstrap-password ADMIN_PASS --bootstrap-admin-url http://control.computer:5555/v3/ --bootstrap-internal-url http://control.computer:5555/v3/ --bootstrap-public-url http://control.computer:5555/v3/ --bootstrap-region-id RegionOne" keystone
+

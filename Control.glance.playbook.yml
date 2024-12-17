@@ -1,0 +1,29 @@
+- name: "Run SQL initialization for 'glance'"
+  community.mysql.mysql_query:
+    login_db: mysql
+    login_host: database.computer
+    login_user: root
+    login_password: "asd345#$%"
+    query:
+      - CREATE DATABASE IF NOT EXISTS glance;
+      - GRANT ALL PRIVILEGES ON glance.* TO 'glance'@'localhost' IDENTIFIED BY 'GLANCE_DBPASS';
+      - GRANT ALL PRIVILEGES ON glance.* TO 'glance'@'%' IDENTIFIED BY 'GLANCE_DBPASS';
+
+- name: "Run SQL migrations for 'glance'"
+  community.docker.docker_compose_v2_run:
+    service: glance
+    project_src: /super
+    files:
+      - openstack.compose.yml
+    command: su -s /bin/sh -c "glance-manage db_sync" glance
+
+
+- name: "Run 'glance' service"
+  community.docker.docker_compose_v2:
+    recreate: always
+    services: 
+      - glance
+    project_src: /super
+    files:
+      - openstack.compose.yml
+  become: true

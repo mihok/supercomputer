@@ -1,0 +1,9 @@
+- name: "Run 'glance' service"
+  community.docker.docker_compose_v2:
+    recreate: always
+    services: 
+      - glance
+    project_src: /super
+    files:
+      - openstack.compose.yml
+  become: true
