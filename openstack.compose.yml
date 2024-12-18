@@ -16,5 +16,45 @@ services:
     ports:
       - 0.0.0.0:9292:9292
     volumes:
-      - ./openstack/keystone/apache.ports.conf:/etc/apache2/ports.conf:ro
+      - ./openstack/glance/apache.ports.conf:/etc/apache2/ports.conf:ro
       - ./openstack/glance/glance-api.conf:/etc/glance/glance-api.conf
+  
+  horizon:
+    depends_on: 
+      - keystone
+    build: ./openstack/horizon
+    network_mode: host
+    ports:
+      - 0.0.0.0:80:80
+    volumes:
+      - ./openstack/horizon/apache.horizon.conf:/etc/apache2/sites-enabled/horizon.conf:ro
+      - ./openstack/horizon/local_settings.py:/etc/openstack-dashboard/local_settings.py:ro
+
+  neutron:
+    depends_on:
+      - keystone
+    build: ./openstack/neutron
+    privileged: true
+    network_mode: host
+    ports:
+      - 0.0.0.0:9696:9696
+    volumes:
+      - /run/openvswitch:/run/openvswitch
+      - /lib/modules:/lib/modules:ro
+      - ./openstack/neutron/ml2_conf.ini:/etc/neutron/plugins/ml2/ml2_conf.ini
+      - ./openstack/neutron/openvswitch_agent.ini:/etc/neutron/plugins/ml2/openvswitch_agent.ini
+      - ./openstack/neutron/l3_agent.ini:/etc/neutron/plugins/ml2/l3_agent.ini
+      - ./openstack/neutron/dhcp_agent.ini:/etc/neutron/plugins/ml2/dhcp_agent.ini
+      - ./openstack/neutron/neutron.conf:/etc/neutron/neutron.conf
+
+  placement:
+    depends_on: 
+      - keystone
+    build: ./openstack/placement
+    network_mode: host
+    ports:
+      - 0.0.0.0:8778:8778
+    volumes:
+      - ./openstack/placement/apache.ports.conf:/etc/apache2/ports.conf:ro
+      - ./openstack/placement/placement.conf:/etc/placement/placement.conf
+ 

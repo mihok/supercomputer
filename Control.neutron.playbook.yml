@@ -6,17 +6,8 @@
     login_password: "asd345#$%"
     query:
       - CREATE DATABASE IF NOT EXISTS neutron;
-      - GRANT ALL PRIVILEGES ON neutron.* TO 'neutron'@'localhost' IDENTIFIED BY 'GLANCE_DBPASS';
-      - GRANT ALL PRIVILEGES ON neutron.* TO 'neutron'@'%' IDENTIFIED BY 'GLANCE_DBPASS';
-
-- name: "Run SQL migrations for 'neutron'"
-  community.docker.docker_compose_v2_run:
-    service: neutron
-    project_src: /super
-    files:
-      - openstack.compose.yml
-    command: su -s /bin/sh -c "neutron-manage db_sync" neutron
-
+      - GRANT ALL PRIVILEGES ON neutron.* TO 'neutron'@'localhost' IDENTIFIED BY 'NEUTRON_DBPASS';
+      - GRANT ALL PRIVILEGES ON neutron.* TO 'neutron'@'%' IDENTIFIED BY 'NEUTRON_DBPASS';
 
 - name: "Run 'neutron' service"
   community.docker.docker_compose_v2:
@@ -27,3 +18,12 @@
     files:
       - openstack.compose.yml
   become: true
+
+- name: "Run SQL migrations for 'neutron'"
+  community.docker.docker_compose_v2_run:
+    service: neutron
+    project_src: /super
+    cleanup: true
+    files:
+      - openstack.compose.yml
+    command: su -s /bin/sh -c "neutron-db-manage --config-file /etc/neutron/neutron.conf --config-file /etc/neutron/plugins/ml2/ml2_conf.ini upgrade head" neutron

@@ -60,6 +60,16 @@
     - name: "Install SQL initialization scripts"
       ansible.builtin.shell: sudo apt install python3-pymysql
 
+    - name: "Shutdown services"
+      community.docker.docker_compose_v2:
+        project_src: /super
+        remove_images: local
+        files: 
+          - openstack.compose.yml
+        state: absent
+      become: true
+
+
     - name: "Install keystone"
       ansible.builtin.include_tasks:
         file: Control.keystone.playbook.yml
@@ -67,3 +77,15 @@
     - name: "Install glance"
       ansible.builtin.include_tasks:
         file: Control.glance.playbook.yml
+
+    - name: "Install horizon"
+      ansible.builtin.include_tasks:
+        file: Control.horizon.playbook.yml
+    
+    - name: "Install neutron"
+      ansible.builtin.include_tasks:
+        file: Control.neutron.playbook.yml
+
+    - name: "Install placement"
+      ansible.builtin.include_tasks:
+        file: Control.placement.playbook.yml

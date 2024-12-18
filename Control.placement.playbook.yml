@@ -1,0 +1,31 @@
+- name: "Run SQL initialization for 'placement'"
+  community.mysql.mysql_query:
+    login_db: mysql
+    login_host: database.computer
+    login_user: root
+    login_password: "asd345#$%"
+    query:
+      - CREATE DATABASE IF NOT EXISTS placement;
+      - GRANT ALL PRIVILEGES ON placement.* TO 'placement'@'localhost' IDENTIFIED BY 'PLACEMENT_DBPASS';
+      - GRANT ALL PRIVILEGES ON placement.* TO 'placement'@'%' IDENTIFIED BY 'PLACEMENT_DBPASS';
+
+- name: "Run 'placement' service"
+  community.docker.docker_compose_v2:
+    recreate: always
+    services: 
+      - placement
+    project_src: /super
+    files:
+      - openstack.compose.yml
+  become: true
+
+- name: "Run SQL migrations for 'placement'"
+  community.docker.docker_compose_v2_run:
+    service: placement
+    project_src: /super
+    cleanup: true
+    files:
+      - openstack.compose.yml
+    command: su -s /bin/sh -c "placement-manage db sync" placement
+  become: true
+

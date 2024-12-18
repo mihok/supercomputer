@@ -13,10 +13,11 @@
   community.docker.docker_compose_v2_run:
     service: glance
     project_src: /super
+    cleanup: true
     files:
       - openstack.compose.yml
     command: su -s /bin/sh -c "glance-manage db_sync" glance
-
+  become: true
 
 - name: "Run 'glance' service"
   community.docker.docker_compose_v2:

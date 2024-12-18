@@ -1,8 +1,8 @@
-- name: "Run 'glance' service"
+- name: "Run 'horizon' service"
   community.docker.docker_compose_v2:
     recreate: always
     services: 
-      - glance
+      - horizon
     project_src: /super
     files:
       - openstack.compose.yml
